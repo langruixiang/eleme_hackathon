@@ -18,17 +18,14 @@ public class UserDAL {
 	
 	//
 	public User GetUser(String name,String password){
-		Connection conn = null;
+		MySQLPool pool = MySQLPool.getInstance();
+		Connection conn = pool.getConnection();
 		User user = new User();
 		user.id = -1;
 		user.name = "";
 		user.password = "";
 		String sql = "";
 		try {          
-            Class.forName("com.mysql.jdbc.Driver");
-//            System.out.println("成功加载MySQL驱动程序");
-            // 一个Connection代表一个数据库连接
-            conn = DriverManager.getConnection(url);
             // Statement里面带有很多方法，比如executeUpdate可以实现插入，更新和删除等
             Statement stmt = conn.createStatement();            
             sql = "select * from user where name=\""+name+"\" and password=\"" +password+"\"";
@@ -40,29 +37,18 @@ public class UserDAL {
                 }
         } catch (SQLException e) {
             e.printStackTrace();
-        } catch (Exception e) {
-            e.printStackTrace();
         } finally {
-            try {
-				conn.close();
-			} catch (SQLException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+        	pool.releaseConnection(conn);
         }
 		return user;
 	}
 	
 	public static List<User> GetAllUser(){
-		Connection conn = null;
+		MySQLPool pool = MySQLPool.getInstance();
+		Connection conn = pool.getConnection();
 		List<User> userList = new LinkedList<User>();
 		String sql = "";
-		try {          
-            Class.forName("com.mysql.jdbc.Driver");
-//            System.out.println("成功加载MySQL驱动程序");
-            // 一个Connection代表一个数据库连接
-            conn = DriverManager.getConnection(url);
-            // Statement里面带有很多方法，比如executeUpdate可以实现插入，更新和删除等
+		try {                      
             Statement stmt = conn.createStatement();            
             sql = "select * from user";
             ResultSet rs = stmt.executeQuery(sql);//executeUpdate语句会返回一个受影响的行数，如果返回-1就没有成功
@@ -74,25 +60,16 @@ public class UserDAL {
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
-            try {
-				conn.close();
-			} catch (SQLException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+        	pool.releaseConnection(conn);
         }
 		return userList;
 	}
 	
 	public Boolean IsExistUser(String name,String password){
-		Connection conn = null;
-		User user = new User();
+		MySQLPool pool = MySQLPool.getInstance();
+		Connection conn = pool.getConnection();
 		String sql = "";
 		try {          
-            Class.forName("com.mysql.jdbc.Driver");
-                        // 一个Connection代表一个数据库连接
-            conn = DriverManager.getConnection(url);
-            // Statement里面带有很多方法，比如executeUpdate可以实现插入，更新和删除等
             Statement stmt = conn.createStatement();            
             sql = "select * from user where name=\""+name+"\" and password=\"" +password+"\"";
             ResultSet rs = stmt.executeQuery(sql);// executeUpdate语句会返回一个受影响的行数，如果返回-1就没有成功
@@ -102,12 +79,7 @@ public class UserDAL {
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
-            try {
-				conn.close();
-			} catch (SQLException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+        	pool.releaseConnection(conn);
         }
 		return false;
 	}

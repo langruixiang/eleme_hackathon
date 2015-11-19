@@ -56,14 +56,13 @@ public class FoodDAL {
 		//根据ID返回所有食物
 		//不存在返回null
 		public Food GetFoodById(int id){
-			Connection conn = null;
-			User user = null;
+			MySQLPool pool = MySQLPool.getInstance();
+			Connection conn = pool.getConnection();
+			 
 			String sql = "";
 			Food food = new Food();
 			try {          
-	            Class.forName("com.mysql.jdbc.Driver");
-//	            System.out.println("成功加载MySQL驱动程序");            
-	            conn = DriverManager.getConnection(url);
+	            
 	            Statement stmt = conn.createStatement();           
 	            sql = "select * from food where id = "+id;
 	            ResultSet rs = stmt.executeQuery(sql);// executeUpdate语句会返回一个受影响的行数，如果返回-1就没有成功	            
@@ -79,42 +78,28 @@ public class FoodDAL {
 	        	food = null;
 	            e.printStackTrace();
 	        } finally {
-	            try {
-					conn.close();
-				} catch (SQLException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+	        	pool.releaseConnection(conn);
 	        }
 			return food;
 		}
 	//stock值减去count。
 	//返回修改数据库的行数，-1为操作数据库错误。
 	public int UpdateFood(int id,int count){
-		Connection conn = null;
-		User user = null;
+		MySQLPool pool = MySQLPool.getInstance();
+		Connection conn = pool.getConnection();
 		String sql = "";
-		try {          
-            Class.forName("com.mysql.jdbc.Driver");
-           
-            // 一个Connection代表一个数据库连接
-            conn = DriverManager.getConnection(url);
-            // Statement里面带有很多方法，比如executeUpdate可以实现插入，更新和删除等
+		try {
             Statement stmt = conn.createStatement();            
             sql = "update food set stock=(stock-" + count+") where id = "+id ;
             int rs = stmt.executeUpdate(sql);// executeUpdate语句会返回一个受影响的行数，如果返回-1就没有成功
+            pool.releaseConnection(conn);
             return rs;
         } catch (SQLException e) {
             e.printStackTrace();
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
-            try {
-				conn.close();
-			} catch (SQLException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+        	pool.releaseConnection(conn);
         }
 		return -1;
 	}
@@ -127,19 +112,16 @@ public class FoodDAL {
 	//stock值减去count。
 	//返回修改数据库的行数，-1为操作数据库错误,-2为超过库存数。
 	public int UpdateFood(ConsumeFood cosumption){
-		Connection conn = null;
-		User user = null;
+		MySQLPool pool = MySQLPool.getInstance();
+		Connection conn = pool.getConnection();
 		String sql = "";
 		try {          
-            Class.forName("com.mysql.jdbc.Driver");            
-            // 一个Connection代表一个数据库连接
-            conn = DriverManager.getConnection(url);
-            // Statement里面带有很多方法，比如executeUpdate可以实现插入，更新和删除等
             Statement stmt = conn.createStatement();      
             String sqlSelectForUpdate = "select stock from food where id="+cosumption.id +" for update;";
             ResultSet rSet = stmt.executeQuery(sqlSelectForUpdate);
             rSet.next();
 //            System.out.println(rSet.getInt(1) - cosumption.cosumeCount);
+            pool.releaseConnection(conn);
             if( (rSet.getInt(1) - cosumption.cosumeCount) >= 0){
             	sql = "update food set stock=(stock-" + cosumption.cosumeCount+") where id = "+cosumption.id ;
                 int rs = stmt.executeUpdate(sql);// executeUpdate语句会返回一个受影响的行数，如果返回-1就没有成功
@@ -153,12 +135,7 @@ public class FoodDAL {
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
-            try {
-				conn.close();
-			} catch (SQLException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+        	pool.releaseConnection(conn);
         }
 		return -1;
 	}
@@ -167,8 +144,8 @@ public class FoodDAL {
 		//stock值减去count。
 		//返回修改数据库的行数，-1为操作数据库错误。
 		public int UpdateFood(List<ConsumeFood> cosumptions){
-			Connection conn = null;
-			User user = null;
+			MySQLPool pool = MySQLPool.getInstance();
+			Connection conn = pool.getConnection();
 			String sql = "";
 			try {          
 	            Class.forName("com.mysql.jdbc.Driver");
@@ -183,18 +160,14 @@ public class FoodDAL {
 	            	sql = "update food set stock=(stock-" + c.cosumeCount+") where id = "+ c.id ;
 		             rs += stmt.executeUpdate(sql);// executeUpdate语句会返回一个受影响的行数，如果返回-1就没有成功
 	            }
+	            pool.releaseConnection(conn);
 	            return rs;
 	        } catch (SQLException e) {
 	            e.printStackTrace();
 	        } catch (Exception e) {
 	            e.printStackTrace();
 	        } finally {
-	            try {
-					conn.close();
-				} catch (SQLException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+	        	pool.releaseConnection(conn);
 	        }
 			return -1;
 		}
