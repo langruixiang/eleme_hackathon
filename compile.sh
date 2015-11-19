@@ -1,5 +1,5 @@
 #!/bin/bash
-PROJECT_PATH=/vagrant/elemeServer
+PROJECT_PATH=./elemeServer
 SRC_PATH=$PROJECT_PATH/src
 BIN_PATH=$PROJECT_PATH/bin
 JAR_PATH=$PROJECT_PATH
