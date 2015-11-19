@@ -7,6 +7,7 @@ import com.google.gson.JsonParser;
 
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
+import redisDAL.RedisDAL;
 
 /*************************************************************************
 	> File Name: ConstValue.java
@@ -106,7 +107,7 @@ public class ConstValue {
     			config.setTimeBetweenEvictionRunsMillis(10000);
     			jedisPool = new JedisPool(config, ConstValue.REDIS_HOST,Integer.parseInt(ConstValue.REDIS_PORT));
     			
-    	
+    			RedisDAL.GetAllFoodFromSQL();
     	
     	//System.out.println();
     	//System.out.println(APP_HOST );

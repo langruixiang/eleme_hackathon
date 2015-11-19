@@ -139,9 +139,9 @@ public class RedisDAL {
 	}
 	
 	//从数据库读全部食物并写入Redis
-	private List<Food>  GetAllFoodFromSQL(){		
+	public static List<Food>  GetAllFoodFromSQL(){		
 		Jedis jedis = ConstValue.jedisPool.getResource();
-		List<Food>allfoods = foodDAL.GetFood();
+		List<Food>allfoods = FoodDAL.GetFood();//foodDAL.GetFood();
 		String foodListKey = "allfoodInfo";		
 		for(Food food: allfoods){
 			//TODO: 优化类型转换。	

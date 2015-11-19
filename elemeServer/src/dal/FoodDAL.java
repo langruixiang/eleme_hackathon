@@ -14,10 +14,10 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class FoodDAL {
-	public  String url = "jdbc:mysql://"+ConstValue.DB_HOST+":"+ ConstValue.DB_PORT +"/"+ConstValue.DB_NAME+"?"
+	public  static String url = "jdbc:mysql://"+ConstValue.DB_HOST+":"+ ConstValue.DB_PORT +"/"+ConstValue.DB_NAME+"?"
             + "user="+ConstValue.DB_USER+"&password=" + ConstValue.DB_PASS+"&useUnicode=true&characterEncoding=UTF8";	
 	//返回所有食物
-	public List<Food> GetFood(){
+	public static List<Food> GetFood(){
 		Connection conn = null;
 		User user = null;
 		String sql = "";
