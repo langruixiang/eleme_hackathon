@@ -1,0 +1,4 @@
+language: java
+script:
+  - ./compile.sh 
+  - ./run.sh    
