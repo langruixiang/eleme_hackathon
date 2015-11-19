@@ -72,23 +72,23 @@ public class RedisDAL {
 	//TODO:1 直接把全部用户加载到redis
 	//2. 直接读数据库，不处理redis
 	public boolean IsExistUser(String name,String password){
-		
-		return  userDAL.IsExistUser(name, password);
-		/*
-		String pwd = jedis.get("name");
-		Boolean result; 
+		//return  userDAL.IsExistUser(name, password);
+		Jedis jedis = ConstValue.jedisPool.getResource();
+		String pwd =  jedis.hget("AllUserInfo", "userPassword"+name) ;		
+		jedis.close();
 		if(pwd == null){
-			result = userDAL.IsExistUser(name, password);
+			System.out.print("pwd==null");
+			return false;//userDAL.IsExistUser(name, password);
 		}
 		else{
-			if(pwd == password) {
+			if(pwd.equals(password)) {
 				return true;
 			}
 			else{
+				System.out.print("pwd!=password userpwd:"+pwd);
 				return false;
 			}
 		}
-		return result;*/
 	}
 	
 	
@@ -154,5 +154,21 @@ public class RedisDAL {
 		}
 		jedis.close();
 		return allfoods;
+	}
+	
+	public static void GetAllUser(){
+		Jedis jedis = ConstValue.jedisPool.getResource();
+		List<User> userList = UserDAL.GetAllUser();		
+		String userListKey = "AllUserInfo";		
+		for(User user: userList){
+			//TODO: 优化类型转换。	
+			Map<String,String> map = new HashMap<String, String>();
+			map.put("userId"+user.name,String.valueOf(user));
+			map.put("userName"+user.name, user.name);
+			map.put("userPassword"+user.name, user.password);
+			jedis.rpush("AllUserName", String.valueOf(user.name));
+			jedis.hmset(userListKey,map );			
+		}
+		jedis.close();
 	}
 }

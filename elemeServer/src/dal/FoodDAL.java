@@ -119,6 +119,11 @@ public class FoodDAL {
 		return -1;
 	}
 	
+	public int UpdataFoods(List<ConsumeFood> consumptionList){
+		return 0;
+	}
+	
+	
 	//stock值减去count。
 	//返回修改数据库的行数，-1为操作数据库错误,-2为超过库存数。
 	public int UpdateFood(ConsumeFood cosumption){

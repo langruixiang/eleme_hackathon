@@ -5,6 +5,7 @@ import java.util.Map;
 import com.google.gson.Gson;
 import com.google.gson.JsonParser;
 
+import dal.UserDAL;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 import redisDAL.RedisDAL;
@@ -106,7 +107,7 @@ public class ConstValue {
     			//逐出扫描的时间间隔(毫秒) 如果为负数,则不运行逐出线程, 默认-1
     			config.setTimeBetweenEvictionRunsMillis(10000);
     			jedisPool = new JedisPool(config, ConstValue.REDIS_HOST,Integer.parseInt(ConstValue.REDIS_PORT));
-    			
+    			RedisDAL.GetAllUser();
     			RedisDAL.GetAllFoodFromSQL();
     	
     	//System.out.println();
