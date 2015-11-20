@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.7"/>
-	<classpathentry kind="lib" path="/home/lang/eleme/hackathon/elemeServer/gson-2.3.1.jar" sourcepath="/home/lang/DownLoad/gson/gson-2.3.1-sources.jar"/>
-	<classpathentry kind="lib" path="/home/lang/eleme/hackathon/elemeServer/netty-all-4.0.33.Final.jar" sourcepath="/home/lang/DownLoad/netty-4.0.33.Final/jar/all-in-one/netty-all-4.0.33.Final-sources.jar"/>
-	<classpathentry kind="lib" path="/home/lang/eleme/hackathon/elemeServer/jedis-2.7.3.jar"/>
-	<classpathentry kind="lib" path="/home/lang/eleme/hackathon/elemeServer/mysql-connector-java-5.1.37-bin.jar"/>
-	<classpathentry kind="lib" path="/home/lang/eleme/hackathon/elemeServer/commons-pool2-2.4.2.jar"/>
+	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.7"/>
+	<classpathentry kind="lib" path="D:/hackathon/elemeServer/commons-pool2-2.4.2.jar"/>
+	<classpathentry kind="lib" path="D:/hackathon/elemeServer/gson-2.3.1.jar"/>
+	<classpathentry kind="lib" path="D:/hackathon/elemeServer/jedis-2.7.3.jar"/>
+	<classpathentry kind="lib" path="D:/hackathon/elemeServer/mysql-connector-java-5.1.37-bin.jar"/>
+	<classpathentry kind="lib" path="D:/hackathon/elemeServer/netty-all-4.0.33.Final.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

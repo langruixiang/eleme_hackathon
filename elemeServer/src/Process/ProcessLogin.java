@@ -15,6 +15,8 @@ import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.FullHttpResponse;
 import server.ConstValue;
 
+import redisDAL.AccessTokenAuthorization;
+
 public class ProcessLogin {
 	private FullHttpResponse response = null;
 	
