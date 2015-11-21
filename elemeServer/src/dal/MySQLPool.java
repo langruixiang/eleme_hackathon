@@ -17,8 +17,8 @@ public class MySQLPool {
     private String url = "jdbc:mysql://"+ConstValue.DB_HOST+":"+ ConstValue.DB_PORT +"/"+ConstValue.DB_NAME;
     private String username = ConstValue.DB_USER;
     private String password = ConstValue.DB_PASS;
-    private int initPoolSize = 10;
-    private int maxPoolSize = 100;
+    private int initPoolSize = 100;
+    private int maxPoolSize = 700;
     private int waitTime = 100;
      
     private MySQLPool() {
