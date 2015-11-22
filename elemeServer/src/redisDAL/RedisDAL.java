@@ -7,6 +7,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.concurrent.locks.Lock;
 
 import dal.FoodDAL;
 import dal.UserDAL;
@@ -47,7 +48,7 @@ public class RedisDAL {
 	public List<Food> GetAllFood(){
 		Jedis jedis = ConstValue.jedisPool.getResource();
 		List<Food> allFoods = new LinkedList<Food>();
-		Map<String, String> foodMap = jedis.hgetAll("allfoodInfo");		
+		Map<String, String> foodMap = jedis.hgetAll("AllFoodInfo");		
 		List<String>allFoodIDs = jedis.lrange("allfoodIDs", 0, -1);		
 		jedis.close();
 		if(allFoodIDs.size() == 0){
@@ -91,6 +92,11 @@ public class RedisDAL {
 		}
 	}
 	
+	public int UpdateFoodInRedis(ConsumeFood consume){
+		Jedis jedis = ConstValue.jedisPool.getResource();
+		return 0;
+	}
+	
 	
 	//下单后更新食物消费情况
 	//TODO:
@@ -98,14 +104,12 @@ public class RedisDAL {
 		Jedis jedis = ConstValue.jedisPool.getResource();
 		int result = foodDAL.UpdateFood(consume);
 		if(result==1){
-			
-			
-			String foodStockRedisStr = jedis.hget("allfoodInfo","foodStock"+consume.id);
+			String foodStockRedisStr = jedis.hget("AllFoodInfo","foodStock"+consume.id);
 			if (foodStockRedisStr !=null){
 				Map<String,String> foodConsumedMap = new TreeMap<String,String>();
 				int nowFoodStock = Integer.parseInt(foodStockRedisStr);			
 				foodConsumedMap.put("foodStock"+consume.id, String.valueOf(nowFoodStock-consume.cosumeCount));
-				jedis.hmset("allfoodInfo",foodConsumedMap);
+				jedis.hmset("AllFoodInfo",foodConsumedMap);
 			}
 			
 		}
@@ -113,6 +117,84 @@ public class RedisDAL {
 		return result;
 		//TODO : update Redis
 	}
+	
+	
+	//下单后更新食物消费情况
+	//TODO:
+	public int UpdateFood(List<ConsumeFood> consumeLists){
+		Jedis jedis = ConstValue.jedisPool.getResource();	
+		//先更新数据库信息
+		int result = 1;//foodDAL.UpdateFood(consumeLists);
+		//再对redis里面的信息进行更新
+		List<ConsumeFood> changedFoods = new LinkedList<ConsumeFood>();
+		if(result>=1){
+			for(ConsumeFood consume: consumeLists){
+				String foodStockRedisStr = jedis.hget("AllFoodInfo","foodStock"+consume.id);
+				//给reids的food加锁。  
+				//TODO: 等待时间太久，琐失效。
+				//可以尝试的办法，乐观锁，wathc+事务
+				String foodLockRedis = "foodStock"+consume.id+".lock";
+				//设置setnx锁,若要update的food被锁，则等待。
+				while(jedis.setnx(foodLockRedis, String.valueOf(System.currentTimeMillis()+300)) !=1){
+					
+					/*String time = jedis.get(foodLockRedis);
+					if(Long.parseLong(time) > System.currentTimeMillis()){						
+						jedis.getSet(foodLockRedis, String.valueOf(System.currentTimeMillis()+300));
+						break;
+					}*/
+					try {
+						Thread.currentThread();
+						Thread.sleep(100);
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+				//锁的时间设置为300毫秒
+				jedis.pexpireAt(foodLockRedis, System.currentTimeMillis()+300);
+				//更新redis里的food的库存量
+				
+				Map<String,String> foodConsumedMap = new TreeMap<String,String>();
+				int nowFoodStock = Integer.parseInt(foodStockRedisStr);			
+				int leftFoodSotck =(nowFoodStock-consume.cosumeCount);
+				if(leftFoodSotck >= 0){
+					foodConsumedMap.put("foodStock"+consume.id, String.valueOf(nowFoodStock-consume.cosumeCount));
+					jedis.hmset("AllFoodInfo",foodConsumedMap);	
+					changedFoods.add(consume);
+				}
+				else{
+					for(ConsumeFood changedConsume:changedFoods){
+						foodLockRedis = "foodStock"+consume.id+".lock";
+						//设置setnx锁,若要update的food被锁，则等待。
+						while(jedis.setnx(foodLockRedis, String.valueOf(System.currentTimeMillis()+300)) !=1){
+							try {
+								Thread.currentThread();
+								Thread.sleep(100);
+							} catch (InterruptedException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
+						}
+						jedis.pexpireAt(foodLockRedis, System.currentTimeMillis()+300);						
+						nowFoodStock = Integer.parseInt(foodStockRedisStr);			
+						leftFoodSotck =(nowFoodStock+consume.cosumeCount);						
+						foodConsumedMap.put("foodStock"+consume.id, String.valueOf(nowFoodStock+consume.cosumeCount));
+						jedis.hmset("AllFoodInfo",foodConsumedMap);	
+						changedFoods.add(consume);						
+					}
+				}
+									
+				
+				//释放锁
+				jedis.del(foodLockRedis);
+			}					
+		}
+		jedis.close();
+		return result;
+		//TODO : update Redis
+	}
+	
+	
 	
 	//通过id获取食物信息
 	//若不存在返回null
@@ -122,7 +204,7 @@ public class RedisDAL {
 		
 		Food food = new Food();	
 		food.id = id;
-		String stock = jedis.hget("allfoodInfo", "foodStock"+id) ;
+		String stock = jedis.hget("AllFoodInfo", "foodStock"+id) ;
 		
 		if(stock == null){
 			jedis.close();
@@ -131,44 +213,48 @@ public class RedisDAL {
 		
 		//System.out.println("GetFoodByID");
 		
-		food.stock =  Integer.parseInt(stock);//jedis.hget("allfoodInfo", "foodStock"+id));
-		food.price = Integer.parseInt(jedis.hget("allfoodInfo", "foodPrice"+id));			
+		food.stock =  Integer.parseInt(stock);//jedis.hget("AllFoodInfo", "foodStock"+id));
+		food.price = Integer.parseInt(jedis.hget("AllFoodInfo", "foodPrice"+id));			
 		jedis.close();
 		return food;
 		//
 	}
 	
 	//从数据库读全部食物并写入Redis
-	public static List<Food>  GetAllFoodFromSQL(){		
-		Jedis jedis = ConstValue.jedisPool.getResource();
+	public static List<Food>  GetAllFoodFromSQL(){			
 		List<Food>allfoods = FoodDAL.GetFood();//foodDAL.GetFood();
-		String foodListKey = "allfoodInfo";		
-		for(Food food: allfoods){
-			//TODO: 优化类型转换。	
-			Map<String,String> map = new HashMap<String, String>();
-			map.put("foodId"+food.id,String.valueOf(food.id));
-			map.put("foodStock"+food.id, String.valueOf(food.stock));
-			map.put("foodPrice"+food.id, String.valueOf(food.price));
-			jedis.rpush("allfoodIDs", String.valueOf(food.id));
-			jedis.hmset(foodListKey,map );			
-		}
+		Jedis jedis = ConstValue.jedisPool.getResource();
+		if(jedis.setnx("GET_ALL_FOOD_INFO", "Begin") == 1){
+			String foodListKey = "AllFoodInfo";		
+			for(Food food: allfoods){
+				//TODO: 优化类型转换。	
+				Map<String,String> map = new HashMap<String, String>();
+				map.put("foodId"+food.id,String.valueOf(food.id));
+				map.put("foodStock"+food.id, String.valueOf(food.stock));
+				map.put("foodPrice"+food.id, String.valueOf(food.price));
+				jedis.rpush("allfoodIDs", String.valueOf(food.id));
+				jedis.hmset(foodListKey,map );			
+			}
+		}		
 		jedis.close();
 		return allfoods;
 	}
 	
 	public static void GetAllUser(){
 		Jedis jedis = ConstValue.jedisPool.getResource();
-		List<User> userList = UserDAL.GetAllUser();		
-		String userListKey = "AllUserInfo";		
-		for(User user: userList){
-			//TODO: 优化类型转换。	
-			Map<String,String> map = new HashMap<String, String>();
-			map.put("userId"+user.name,String.valueOf(user));
-			map.put("userName"+user.name, user.name);
-			map.put("userPassword"+user.name, user.password);
-			jedis.rpush("AllUserName", String.valueOf(user.name));
-			jedis.hmset(userListKey,map );			
-		}
+		if(jedis.setnx("GET_ALL_USER_INFO", "Begin") == 1){
+			List<User> userList = UserDAL.GetAllUser();		
+			String userListKey = "AllUserInfo";		
+			for(User user: userList){
+				//TODO: 优化类型转换。	
+				Map<String,String> map = new HashMap<String, String>();
+				map.put("userId"+user.name,String.valueOf(user));
+				map.put("userName"+user.name, user.name);
+				map.put("userPassword"+user.name, user.password);
+				jedis.rpush("AllUserName", String.valueOf(user.name));
+				jedis.hmset(userListKey,map );			
+			}
+		}		
 		jedis.close();
 	}
 }

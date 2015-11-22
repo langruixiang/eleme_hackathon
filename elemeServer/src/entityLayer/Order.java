@@ -1,5 +1,6 @@
 package entityLayer;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -76,15 +77,17 @@ public class Order {
 		jedisCarts.deleteUserCartId(userAccessToken, cartId);
 		
 		// 更新数据库
+		List<ConsumeFood> cfList = new LinkedList<>();
 		for(String foodId : foodIdList) {
 			ConsumeFood cf = new ConsumeFood();
 			cf.cosumeCount = jedisFood.getFoodNumByCartId(cartId, foodId);
 			cf.id = Integer.parseInt(foodId);
 //			if(cf.cosumeCount > 0)
-				jedisDAL.UpdateFood(cf);
+				//jedisDAL.UpdateFood(cf);
+			cfList.add(cf);
 		}
+		jedisDAL.UpdateFood(cfList);
 		
-	
 		return orderId;
 	}
 	
