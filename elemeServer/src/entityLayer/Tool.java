@@ -3,7 +3,7 @@ import java.util.Random;
 
 
 public class Tool {
-	final static int TOKEN_SIZE = 31;
+	final static int TOKEN_SIZE = 15;
 	final static int MAX_SIZE = 62;
 	
 	// 2 --> cartId 随机生成

@@ -39,7 +39,7 @@ public class JedisOrder {
 		// 用户已下单列表
 		redis.set(accessToken + "order", "1");
 		// 用户下单对应orderId
-		redis.sadd(accessToken + ",mypurse", orderId);
+		redis.sadd(accessToken + "mp", orderId);
 		// 该单对应的食品清单
 		redis.hmset(orderId, foodMap);
 		redis.close();
@@ -54,7 +54,7 @@ public class JedisOrder {
 		List<String> userList = jedisUser.getUserList();
 		
 		for(String username : userList) {
-			Set<String> userOrderedSet = redis.smembers(accessToken + ",mypurse");
+			Set<String> userOrderedSet = redis.smembers(accessToken + "mp");
 			Iterator<String> iter = userOrderedSet.iterator();
 			
 			while(iter.hasNext()) {
@@ -81,7 +81,7 @@ public class JedisOrder {
 		Jedis redis = ConstValue.jedisPool.getResource();
 		List<JsonSubFood> lstFood = new LinkedList<JsonSubFood>();
 		
-		Set<String> userOrderedSet = redis.smembers(accessToken + ",mypurse");
+		Set<String> userOrderedSet = redis.smembers(accessToken + "mp");
 		Iterator<String> iter = userOrderedSet.iterator();
 		
 		if(iter.hasNext()) {

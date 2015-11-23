@@ -15,10 +15,10 @@ public class AccessTokenAuthorization {
 		
 		if(!redisDAL.IsExistUser(username, password)) return "-1";
 		
-		User user = redisDAL.GetUser(username, password);
+		String user = redisDAL.GetUser(username, password);
 		
 		//accessToken = Tool.generateAccessToken();
-		accessToken = String.valueOf(user.id);
+		accessToken = user;
 		
 		redis.lpush("customer", accessToken+'p');
 		redis.close();

@@ -3,7 +3,6 @@
 ./elemeServer/src/dal/FoodDAL.java
 ./elemeServer/src/dal/MySQLPool.java
 ./elemeServer/src/dal/UserDAL.java
-./elemeServer/src/entityLayer/AccessTokenAuthorization.java
 ./elemeServer/src/entityLayer/Cart.java
 ./elemeServer/src/entityLayer/Order.java
 ./elemeServer/src/entityLayer/Tool.java

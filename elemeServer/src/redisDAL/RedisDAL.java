@@ -40,8 +40,12 @@ public class RedisDAL {
 	    jedis.disconnect();
 	}
 	
-	public User GetUser(String name,String password){
-		return userDAL.GetUser(name, password);
+	public String GetUser(String name,String password){
+		Jedis jedis = ConstValue.jedisPool.getResource();
+		String userID =  jedis.hget("AllUserInfo", "userId"+name);
+		jedis.close();
+		return userID;
+		//return userDAL.GetUser(name, password);
 	}
 	
 	//获取全部的food信息
@@ -157,11 +161,13 @@ public class RedisDAL {
 				Map<String,String> foodConsumedMap = new TreeMap<String,String>();
 				int nowFoodStock = Integer.parseInt(foodStockRedisStr);			
 				int leftFoodSotck =(nowFoodStock-consume.cosumeCount);
+				//如果库存足够，则减去消费掉的食物。
 				if(leftFoodSotck >= 0){
 					foodConsumedMap.put("foodStock"+consume.id, String.valueOf(nowFoodStock-consume.cosumeCount));
 					jedis.hmset("AllFoodInfo",foodConsumedMap);	
 					changedFoods.add(consume);
 				}
+				//库存不够，则回滚。
 				else{
 					for(ConsumeFood changedConsume:changedFoods){
 						foodLockRedis = "foodStock"+consume.id+".lock";
@@ -183,8 +189,6 @@ public class RedisDAL {
 						changedFoods.add(consume);						
 					}
 				}
-									
-				
 				//释放锁
 				jedis.del(foodLockRedis);
 			}					
