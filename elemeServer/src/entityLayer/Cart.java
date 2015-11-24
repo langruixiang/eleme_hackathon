@@ -62,7 +62,7 @@ public class Cart {
 		if(curFoodNum + cnt > MAX_FOOD_SIZE) return FOOD_OUT_OF_LIMIT;
 	
 		Map<String, String> map = new HashMap<String, String>();
-		map.put(foodId,count);
+		map.put(foodId,String.valueOf(curFoodNum + cnt));
 		redis.hmset(cartId, map);
 		redis.close();
 		return SUCCESS;
