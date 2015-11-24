@@ -169,6 +169,7 @@ public class RedisDAL {
 				}
 				//库存不够，则回滚。
 				else{
+					result = -1;
 					for(ConsumeFood changedConsume:changedFoods){
 						foodLockRedis = "foodStock"+consume.id+".lock";
 						//设置setnx锁,若要update的food被锁，则等待。
@@ -185,7 +186,8 @@ public class RedisDAL {
 						nowFoodStock = Integer.parseInt(foodStockRedisStr);			
 						leftFoodSotck =(nowFoodStock+consume.cosumeCount);						
 						foodConsumedMap.put("foodStock"+consume.id, String.valueOf(nowFoodStock+consume.cosumeCount));
-						jedis.hmset("AllFoodInfo",foodConsumedMap);												
+						jedis.hmset("AllFoodInfo",foodConsumedMap);		
+						
 					}
 				}
 				//释放锁
