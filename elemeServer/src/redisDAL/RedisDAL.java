@@ -138,6 +138,7 @@ public class RedisDAL {
 				return -1;
 			}
 		}
+		jedis.close();
 		return 1;
 		
 		
