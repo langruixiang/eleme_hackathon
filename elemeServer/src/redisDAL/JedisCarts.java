@@ -12,15 +12,6 @@ public class JedisCarts {
 		Boolean ret = redis.sismember("cartId", cartId);
 		redis.close();
 		return ret;
-/*		
-		Set<String> set = redis.smembers("cartId");   
-		Iterator<String> iter = set.iterator() ;   
-        while(iter.hasNext()){   
-            if(cartId.equals(iter.next())) return true;
-        }   
-        
-		return false;
-*/
 	}
 	
 	public Boolean isCartBelongToUser(final String userAccessToken, final String cartId) {
@@ -29,15 +20,6 @@ public class JedisCarts {
 		Boolean ret = redis.sismember(userAccessToken, cartId);
 		redis.close();
 		return ret;
-/*
-		Set<String> cartSet = redis.smembers(userAccessToken);
-		Iterator<String> iter = cartSet.iterator() ;   
-        while(iter.hasNext()){   
-            if(cartId.equals(iter.next())) return true;
-        }   
-		
-		return false;
-*/
 		
 	}
 	
@@ -51,7 +33,7 @@ public class JedisCarts {
 	public void deleteCart(final String cartId) {
 		Jedis redis = ConstValue.jedisPool.getResource();
 //		System.out.println("deleteCart");
-		redis.srem("Cart", cartId);
+		redis.srem("cartId", cartId);
 		redis.close();
 	}
 	

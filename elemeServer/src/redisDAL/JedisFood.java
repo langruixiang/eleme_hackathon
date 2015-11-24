@@ -32,13 +32,6 @@ public class JedisFood {
 			return ret;
 		}
 		
-/*		
-		Map<String, String> res = redis.hgetAll(cartId);
-		for(Map.Entry<String, String> entry : res.entrySet()) {
-		    if(entry.getKey().equals(foodId)) 
-				return Integer.parseInt((String) entry.getValue());
-		}
-*/		
 		return 0;
 	}
 	

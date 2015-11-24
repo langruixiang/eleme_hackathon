@@ -43,8 +43,8 @@ public class Order {
 		//System.out.println(redis.smembers("user"));
 		//System.out.println("hello world");
 		//System.out.println(redis.smembers("cartId"));
-		//System.out.println("Fuck");
 		//System.out.println(redis.sismember("cartId",cartId));
+		if(jedisOrder.userHasPlaceOrder(userAccessToken)) return ORDER_OUT_OF_LIMIT;
 		// 篮子不存在
 		if(!jedisCarts.isExistCart(cartId)) return CART_NOT_FOUND;
 		// 无权访问篮子
@@ -64,10 +64,10 @@ public class Order {
 		}
 		//System.out.println(foodIdList.size());
 		// 每个用户只能下一单
-		if(jedisOrder.userHasPlaceOrder(userAccessToken)) return ORDER_OUT_OF_LIMIT;
+		//if(jedisOrder.userHasPlaceOrder(userAccessToken)) return ORDER_OUT_OF_LIMIT;
 		
 		// 下单成功，生成订单编号
-		String orderId = Tool.generateAccessToken();
+		String orderId = Tool.generateAccessToken();//jedisOrder.orderId();
 		
 		// 用户下单成功，将用户写入已下单列表
 		jedisOrder.userOrderedSuccess(userAccessToken, orderId, cartId, foodMap);
@@ -86,8 +86,9 @@ public class Order {
 				//jedisDAL.UpdateFood(cf);
 			cfList.add(cf);
 		}
-		jedisDAL.UpdateFood(cfList);
-		
+		if(jedisDAL.UpdateFood(cfList) == -1){
+			return  FOOD_OUT_OF_STOCK;
+		}		
 		return orderId;
 	}
 	

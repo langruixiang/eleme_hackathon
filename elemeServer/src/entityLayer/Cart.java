@@ -34,7 +34,8 @@ public class Cart {
 //		System.out.println("createCart");
 		
 		String cartId = Tool.generateAccessToken();
-		
+		//String cartId = redis.get("cartIdU") + "c";
+		//redis.incr("cartIdU");
 		redis.sadd("cartId", cartId);
 		redis.sadd(accessToken, cartId);
 		redis.close();

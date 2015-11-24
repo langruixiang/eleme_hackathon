@@ -1,7 +1,6 @@
 package redisDAL;
-import model.User;
+import entityLayer.Tool;
 import redis.clients.jedis.Jedis;
-import redisDAL.RedisDAL;
 import server.ConstValue;
 
 public class AccessTokenAuthorization {
@@ -11,17 +10,26 @@ public class AccessTokenAuthorization {
 	{
 		RedisDAL redisDAL = new RedisDAL();
 		Jedis redis = ConstValue.jedisPool.getResource();
-		String accessToken = new String("");
+		//String accessToken = new String("");
 		
 		if(!redisDAL.IsExistUser(username, password)) return "-1";
 		
 		String user = redisDAL.GetUser(username, password);
 		
-		//accessToken = Tool.generateAccessToken();
-		accessToken = user;
+		String accessToken;
+		if(redis.get(user) != null) accessToken = redis.get(user);
+		else  {
+			accessToken = Tool.generateAccessToken();
+			//redis.sadd("user", accessToken);
+			redis.set(user, accessToken);
+			redis.set(accessToken+"uid", user);
+		}
+		//accessToken = user;
+		//String accessToken = redis.get("userIdU") + 'p';
+		//redis.incr("userIdU");
 		
-		redis.lpush("customer", accessToken+'p');
+		
 		redis.close();
-		return accessToken;
+		return user+","+accessToken;
 	}
 }

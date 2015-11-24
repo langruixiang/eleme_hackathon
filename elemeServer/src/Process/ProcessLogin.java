@@ -55,11 +55,13 @@ public class ProcessLogin {
 		
 		String res = access.getAccessToken(username, passwd);
 //		System.out.println("Login res :" + res);
+		String[] arr = res.split(",");
+		
 		
 		if(res.equals("-1")){
 			response = HttpResponseFactory.getWrongPassWord();
 		}else{
-			responseJsonString =  ConstValue.gons.toJson(new BackJsonObject(res, username, res)); 
+			responseJsonString =  ConstValue.gons.toJson(new BackJsonObject(arr[0], username, arr[1])); 
 			response = HttpResponseFactory.getHttpResponse(OK, responseJsonString);
 		}
 		
@@ -67,12 +69,12 @@ public class ProcessLogin {
 	}
 	
 	private class BackJsonObject{
-		String user_id = "";
+		int user_id = 0;
 		String username = "";
 		String access_token = "";
 		
 		public BackJsonObject(String user_id,String username,String access_token){
-			this.user_id = user_id;
+			this.user_id = Integer.parseInt(user_id);
 			this.username = username;
 			this.access_token = access_token;
 		}		

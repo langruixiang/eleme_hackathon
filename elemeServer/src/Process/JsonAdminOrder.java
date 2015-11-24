@@ -4,13 +4,13 @@ import java.util.List;
 
 public class JsonAdminOrder {
 	private String id;
-	private String user_id;
+	private int user_id;
 	private List<JsonSubFood> items;
 	private int total;
 	
 	public JsonAdminOrder(String id,String user_id,List<JsonSubFood> items,String total){
 		this.id = id;
-		this.user_id = user_id;
+		this.user_id = Integer.parseInt(user_id);
 		this.items = items;
 		this.total = Integer.parseInt(total);
 	}
