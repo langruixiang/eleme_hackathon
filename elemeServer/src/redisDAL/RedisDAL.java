@@ -165,12 +165,14 @@ public class RedisDAL {
 					foodConsumedMap.put("foodStock"+consume.id, String.valueOf(nowFoodStock-consume.cosumeCount));
 					jedis.hmset("AllFoodInfo",foodConsumedMap);	
 					changedFoods.add(consume);
+					//释放锁
+					jedis.del(foodLockRedis);
 				}
 				//库存不够，则回滚。
 				else{
 					result = -1;
 					for(ConsumeFood changedConsume:changedFoods){
-						foodLockRedis = "foodStock"+consume.id+".lock";
+						foodLockRedis = "foodStock"+changedConsume.id+".lock";
 						//设置setnx锁,若要update的food被锁，则等待。
 						while(jedis.setnx(foodLockRedis, String.valueOf(System.currentTimeMillis()+300)) !=1){
 							try {
@@ -183,14 +185,14 @@ public class RedisDAL {
 						}
 						jedis.pexpireAt(foodLockRedis, System.currentTimeMillis()+300);						
 						nowFoodStock = Integer.parseInt(foodStockRedisStr);			
-						leftFoodSotck =(nowFoodStock+consume.cosumeCount);						
-						foodConsumedMap.put("foodStock"+consume.id, String.valueOf(nowFoodStock+consume.cosumeCount));
+						leftFoodSotck =(nowFoodStock+changedConsume.cosumeCount);						
+						foodConsumedMap.put("foodStock"+changedConsume.id, String.valueOf(nowFoodStock+changedConsume.cosumeCount));
 						jedis.hmset("AllFoodInfo",foodConsumedMap);		
-						
+						//释放锁
+						jedis.del(foodLockRedis);
 					}
 				}
-				//释放锁
-				jedis.del(foodLockRedis);
+			
 			}					
 		}
 		jedis.close();
