@@ -60,9 +60,10 @@ public class Cart {
 		int cnt = Integer.parseInt(count);
 		int curFoodNum = jedisFood.getFoodNumByCartId(cartId, String.valueOf(foodId));
 		if(curFoodNum + cnt > MAX_FOOD_SIZE) return FOOD_OUT_OF_LIMIT;
-	
+		int curFoodIdNum = jedisFood.getFoodNumByFoodIdInCartId(cartId, String.valueOf(foodId));
 		Map<String, String> map = new HashMap<String, String>();
-		map.put(foodId,count);
+		map.put(foodId,String.valueOf(curFoodIdNum+cnt));
+		
 		redis.hmset(cartId, map);
 		redis.close();
 		return SUCCESS;
