@@ -82,15 +82,14 @@ public class RedisDAL {
 		String pwd =  jedis.hget("AllUserInfo", "userPassword"+name) ;		
 		jedis.close();
 		if(pwd == null){
-			System.out.print("pwd==null");
+			
 			return false;//userDAL.IsExistUser(name, password);
 		}
 		else{
 			if(pwd.equals(password)) {
 				return true;
 			}
-			else{
-				System.out.print("pwd!=password userpwd:"+pwd);
+			else{				
 				return false;
 			}
 		}

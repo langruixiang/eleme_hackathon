@@ -93,7 +93,7 @@ public class Order {
 	}
 	
 	public List<JsonAdminOrder> getOrderListByAdmin(final String accessToken) {
-//		System.out.println("--------------------------------------------------------------");
+
 		return jedisOrder.queryOrderFoodListByAdmin(accessToken);
 	}
 	

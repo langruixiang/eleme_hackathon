@@ -81,7 +81,7 @@ public class JedisOrder {
 		}
 		redis.close();
 		//System.out.println("queryOrderFoodListByAdmin");
-		System.out.println(ansList.size() + "---------------------------------------------------------------");
+		
 		return ansList;
 	}
 	
