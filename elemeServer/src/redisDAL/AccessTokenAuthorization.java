@@ -14,22 +14,17 @@ public class AccessTokenAuthorization {
 		
 		if(!redisDAL.IsExistUser(username, password)) return "-1";
 		
-		String user = redisDAL.GetUser(username, password);
+		String userId = redisDAL.GetUser(username, password);
 		
 		String accessToken;
-		if(redis.get(user) != null) accessToken = redis.get(user);
+		if(redis.get(userId) != null) accessToken = redis.get(userId);
 		else  {
 			accessToken = Tool.generateAccessToken();
-			//redis.sadd("user", accessToken);
-			redis.set(user, accessToken);
-			redis.set(accessToken+"uid", user);
+			redis.set(userId, accessToken);
+			redis.set(accessToken+"uid", userId);
 		}
-		//accessToken = user;
-		//String accessToken = redis.get("userIdU") + 'p';
-		//redis.incr("userIdU");
-		
-		
+
 		redis.close();
-		return user+","+accessToken;
+		return userId+","+accessToken;
 	}
 }

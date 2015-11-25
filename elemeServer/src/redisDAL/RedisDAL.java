@@ -135,6 +135,7 @@ public class RedisDAL {
 				for(ConsumeFood changed:changedFoods){
 					jedis.incrBy("foodStock"+changed.id, changed.cosumeCount);
 				}
+				jedis.close();
 				return -1;
 			}
 		}

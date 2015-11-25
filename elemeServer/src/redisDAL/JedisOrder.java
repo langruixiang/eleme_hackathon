@@ -22,36 +22,24 @@ public class JedisOrder {
 	
 	public Boolean userHasPlaceOrder(final String userAccessToken) {
 		Jedis redis = ConstValue.jedisPool.getResource();
-		//System.out.println("userHasPlaceOrder");
-		Boolean ret = redis.sismember("orderUserU", userAccessToken);
+		String userId = redis.get(userAccessToken + "uid");
+		Boolean ret = redis.sismember("orderUserU", userId);
 		redis.close();
 		return ret;
-		/*
-		String res = redis.get(userAccessToken + "order");
-		redis.close();
-		if(res == null) {
-			return false;
-		}
-		if(res.equals("1")) {
-			return true;
-		}		
-		return false;
-		*/
 	}
 	
 	public void userOrderedSuccess(final String accessToken, 
 			final String orderId, final String cartId, Map<String, String> foodMap) {
 		Jedis redis = ConstValue.jedisPool.getResource();
-		// 用户已下单mark
-		//redis.set(accessToken + "order", "1");
+		// get user id
+		String userId = redis.get(accessToken + "uid");
 		// 用户已下单list
-		redis.sadd("orderUserU", accessToken);
+		redis.sadd("orderUserU", userId);
 		// 用户下单对应orderId
-		redis.sadd(accessToken + "mp", orderId);
+		redis.sadd(userId + "mp", orderId);
 		// 该单对应的食品清单
 		redis.hmset(orderId, foodMap);
 		redis.close();
-		//System.out.println("userOrderedSuccess");
 	}
 	
 	// 返回用户订单 admin
@@ -61,8 +49,8 @@ public class JedisOrder {
 		
 		List<String> userList = jedisUser.getUserList();
 		
-		for(String accessToken : userList) {
-			Set<String> userOrderedSet = redis.smembers(accessToken + "mp");
+		for(String userId : userList) {
+			Set<String> userOrderedSet = redis.smembers(userId + "mp");
 			Iterator<String> iter = userOrderedSet.iterator();
 			
 			while(iter.hasNext()) {
@@ -76,11 +64,10 @@ public class JedisOrder {
 					total += food.price * Integer.parseInt(entry.getValue());
 					lstFood.add(tmp);
 				}
-				ansList.add(new JsonAdminOrder(orderId, redis.get(accessToken+"uid"), lstFood, String.valueOf(total)));
+				ansList.add(new JsonAdminOrder(orderId, userId, lstFood, String.valueOf(total)));
 			}
 		}
 		redis.close();
-		//System.out.println("queryOrderFoodListByAdmin");
 		
 		return ansList;
 	}
@@ -89,7 +76,8 @@ public class JedisOrder {
 		Jedis redis = ConstValue.jedisPool.getResource();
 		List<JsonSubFood> lstFood = new LinkedList<JsonSubFood>();
 		
-		Set<String> userOrderedSet = redis.smembers(accessToken + "mp");
+		String userId = redis.get(accessToken + "uid");
+		Set<String> userOrderedSet = redis.smembers(userId + "mp");
 		Iterator<String> iter = userOrderedSet.iterator();
 		
 		if(iter.hasNext()) {
@@ -110,13 +98,4 @@ public class JedisOrder {
 		return null;
 	}
 	
-	public String orderId() {
-		Jedis redis = ConstValue.jedisPool.getResource();
-		//String orderId = redis.get("orderIdU");
-		//redis.incr("orderIdU");
-		//redis.close();
-		String orderId = Tool.generateAccessToken();
-		redis.close();
-		return orderId;
-	}
 }

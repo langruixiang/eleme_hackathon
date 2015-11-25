@@ -23,7 +23,6 @@ public class Cart {
 	// 篮子中的食物最大数
 	final static int MAX_FOOD_SIZE = 3;
 	
-	//Jedis redis = ConstValue.jedisPool.getResource();
 	JedisCarts jedisCarts = new JedisCarts();
 	RedisDAL redisDAL = new RedisDAL();
 	JedisFood jedisFood = new JedisFood();
@@ -31,11 +30,7 @@ public class Cart {
 	// 新建篮子
 	public String createCart(final String accessToken) {
 		Jedis redis = ConstValue.jedisPool.getResource();
-//		System.out.println("createCart");
-		
 		String cartId = Tool.generateAccessToken();
-		//String cartId = redis.get("cartIdU") + "c";
-		//redis.incr("cartIdU");
 		redis.sadd("cartId", cartId);
 		redis.sadd(accessToken, cartId);
 		redis.close();
@@ -45,27 +40,32 @@ public class Cart {
 	// 添加食物
 	public String addFoodToCart(final String foodId, final String count, 
 			final String userAccessToken, final String cartId) {
-		Jedis redis = ConstValue.jedisPool.getResource();
-//		System.out.println("addFoodToCart");
 		
+		// cart not found
 		if(!jedisCarts.isExistCart(cartId)) return CART_NOT_FOUND;
+		// not authorized to access cart
 		if(!jedisCarts.isCartBelongToUser(userAccessToken, cartId)) 
 			return NOT_AUTHORIZED_TO_ACCESS_CART;
-		
-//		System.out.println("----------");
-	
+		// food not found
 		int idx = Integer.parseInt(foodId);
 		if(redisDAL.GetFoodById(idx) == null)  return FOOD_NOT_FOUND;
-		
+		// food out of limit
 		int cnt = Integer.parseInt(count);
-		int curFoodNum = jedisFood.getFoodNumByCartId(cartId, String.valueOf(foodId));
+		int curFoodNum = jedisFood.getFoodNumByCartId(cartId);
 		if(curFoodNum + cnt > MAX_FOOD_SIZE) return FOOD_OUT_OF_LIMIT;
-		int curFoodIdNum = jedisFood.getFoodNumByFoodIdInCartId(cartId, String.valueOf(foodId));
+		
+		// get current foodId's quantity in cart
+		int curFoodIdNum = jedisFood.getFoodNumByFoodIdInCart(cartId, String.valueOf(foodId));
+		
+		// redis write into buffer
+		Jedis redis = ConstValue.jedisPool.getResource();
+		
 		Map<String, String> map = new HashMap<String, String>();
 		map.put(foodId,String.valueOf(curFoodIdNum+cnt));
-		
 		redis.hmset(cartId, map);
+		
 		redis.close();
+		
 		return SUCCESS;
 	}
 	
