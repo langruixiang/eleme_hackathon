@@ -12,8 +12,6 @@ hs_err_pid*
 README.md
 RemoteSystemsTempFiles/
 Vagrantfile
-benchmark/
-tests/
 hackathon-java/
 TestMySql.java
 app.log
