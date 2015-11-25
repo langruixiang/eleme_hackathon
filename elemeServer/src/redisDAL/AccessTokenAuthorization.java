@@ -20,10 +20,15 @@ public class AccessTokenAuthorization {
 		if(redis.get(userId) != null) accessToken = redis.get(userId);
 		else  {
 			accessToken = Tool.generateAccessToken();
+			//redis.sadd("user", accessToken);
 			redis.set(userId, accessToken);
 			redis.set(accessToken+"uid", userId);
 		}
-
+		//accessToken = user;
+		//String accessToken = redis.get("userIdU") + 'p';
+		//redis.incr("userIdU");
+		
+		
 		redis.close();
 		return userId+","+accessToken;
 	}

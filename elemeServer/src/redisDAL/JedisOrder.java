@@ -22,28 +22,42 @@ public class JedisOrder {
 	
 	public Boolean userHasPlaceOrder(final String userAccessToken) {
 		Jedis redis = ConstValue.jedisPool.getResource();
+		//System.out.println("userHasPlaceOrder");
 		String userId = redis.get(userAccessToken + "uid");
 		Boolean ret = redis.sismember("orderUserU", userId);
 		redis.close();
 		return ret;
+		/*
+		String res = redis.get(userAccessToken + "order");
+		redis.close();
+		if(res == null) {
+			return false;
+		}
+		if(res.equals("1")) {
+			return true;
+		}		
+		return false;
+		*/
 	}
 	
 	public void userOrderedSuccess(final String accessToken, 
 			final String orderId, final String cartId, Map<String, String> foodMap) {
 		Jedis redis = ConstValue.jedisPool.getResource();
-		// get user id
-		String userId = redis.get(accessToken + "uid");
+		// 用户已下单mark
+		//redis.set(accessToken + "order", "1");
 		// 用户已下单list
+		String userId = redis.get(accessToken + "uid");
 		redis.sadd("orderUserU", userId);
 		// 用户下单对应orderId
 		redis.sadd(userId + "mp", orderId);
 		// 该单对应的食品清单
 		redis.hmset(orderId, foodMap);
 		redis.close();
+		//System.out.println("userOrderedSuccess");
 	}
 	
 	// 返回用户订单 admin
-	public List<JsonAdminOrder> queryOrderFoodListByAdmin(final String accessToken1) {	
+	public List<JsonAdminOrder> queryOrderFoodListByAdmin() {	
 		Jedis redis = ConstValue.jedisPool.getResource();
 		List<JsonAdminOrder> ansList = new LinkedList<JsonAdminOrder>();
 		
@@ -68,6 +82,7 @@ public class JedisOrder {
 			}
 		}
 		redis.close();
+		//System.out.println("queryOrderFoodListByAdmin");
 		
 		return ansList;
 	}
@@ -97,5 +112,4 @@ public class JedisOrder {
 		//System.out.println("queryOrderFoodList");
 		return null;
 	}
-	
 }

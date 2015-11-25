@@ -15,15 +15,15 @@ public class JedisFood {
 		//System.out.println("getFoodNumByCartId");
 
 		Map<String, String> res = redis.hgetAll(cartId);
+		redis.close();
 		int count = 0;
 		for(Map.Entry<String, String> entry : res.entrySet()) {
 			count += Integer.parseInt((String) entry.getValue());
 		}
-		redis.close();
 		return count;
 	}
 	
-	public int getFoodNumByFoodIdInCart(final String cartId, final String foodId) {
+	public int getFoodNumByFoodIdInCartId(final String cartId, final String foodId) {
 		//System.out.println("getFoodNumByCartId");
 		Jedis redis = ConstValue.jedisPool.getResource();
 		int ret = 0;
@@ -36,12 +36,13 @@ public class JedisFood {
 	
 	public List<String> getCartFoodList(final String cartId) {
 		Jedis redis = ConstValue.jedisPool.getResource();
+		//System.out.println("getCartFoodList");
 		Map<String, String> userCartMap = redis.hgetAll(cartId);
+		redis.close();
 		List<String> list = new LinkedList<String>();
 		for(Map.Entry<String, String> entry : userCartMap.entrySet()) {
 			list.add(entry.getKey());
 		}
-		redis.close();
 		return list;
 	}
 }
