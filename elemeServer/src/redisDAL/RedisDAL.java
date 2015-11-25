@@ -56,6 +56,7 @@ public class RedisDAL {
 		List<String>allFoodIDs = jedis.lrange("allfoodIDs", 0, -1);
 		
 		if(allFoodIDs.size() == 0){
+			jedis.close();
 			return GetAllFoodFromSQL();
 		}		
 		Iterator<String> iterator = allFoodIDs.iterator();
