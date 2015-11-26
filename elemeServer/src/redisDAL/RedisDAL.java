@@ -2,10 +2,12 @@ package redisDAL;
  
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.locks.Lock;
 
@@ -41,10 +43,11 @@ public class RedisDAL {
 	}
 	
 	public String GetUser(String name,String password){
-		Jedis jedis = ConstValue.jedisPool.getResource();
+		/*Jedis jedis = ConstValue.jedisPool.getResource();
 		String userID =  jedis.hget("AllUserInfo", "userId"+name);
 		jedis.close();
-		return userID;
+		return userID;*/
+		return String.valueOf(ConstValue.nameToIdMap.get(name));
 		//return userDAL.GetUser(name, password);
 	}
 	
@@ -79,7 +82,7 @@ public class RedisDAL {
 	//2. 直接读数据库，不处理redis
 	public boolean IsExistUser(String name,String password){
 		//return  userDAL.IsExistUser(name, password);
-		Jedis jedis = ConstValue.jedisPool.getResource();
+		/*Jedis jedis = ConstValue.jedisPool.getResource();
 		String pwd =  jedis.hget("AllUserInfo", "userPassword"+name) ;		
 		jedis.close();
 		if(pwd == null){
@@ -93,7 +96,13 @@ public class RedisDAL {
 			else{				
 				return false;
 			}
+		}*/
+		if(ConstValue.userSet.contains(name)){
+			if(ConstValue.nameToPwdMap.get(name).equals(password)){
+				return true;
+			}
 		}
+		return false;
 	}
 	
 	public int UpdateFoodInRedis(ConsumeFood consume){
@@ -267,21 +276,32 @@ public class RedisDAL {
 		return allfoods;
 	}
 	
-	public static void GetAllUser(){
-		Jedis jedis = ConstValue.jedisPool.getResource();
-		if(jedis.setnx("GET_ALL_USER_INFO", "Begin") == 1){
-			List<User> userList = UserDAL.GetAllUser();		
-			String userListKey = "AllUserInfo";		
-			for(User user: userList){
-				//TODO: 优化类型转换。	
-				Map<String,String> map = new HashMap<String, String>();
-				map.put("userId"+user.name,String.valueOf(user.id));
-				map.put("userName"+user.name, user.name);
-				map.put("userPassword"+user.name, user.password);
-				jedis.rpush("AllUserName", String.valueOf(user.name));
-				jedis.hmset(userListKey,map );			
-			}
-		}		
-		jedis.close();
+	public static void GetAllUserSaveInJava(Set<String> userSet,HashMap<String, String> nameToPwdMap,HashMap<String, Integer> nameToIDMap){
+		List<User> userList = UserDAL.GetAllUser();	
+		//Set<String>userSet = new HashSet<>();
+		//HashMap<String, String> nameToPwdMap = new HashMap<>();
+		for (User user : userList) {
+			userSet.add(user.name);
+			nameToPwdMap.put(user.name, user.password);
+			nameToIDMap.put(user.name,user.id);
+		}
 	}
+	
+//	public static void GetAllUser(){
+//		Jedis jedis = ConstValue.jedisPool.getResource();
+//		if(jedis.setnx("GET_ALL_USER_INFO", "Begin") == 1){
+//			List<User> userList = UserDAL.GetAllUser();		
+//			String userListKey = "AllUserInfo";		
+//			for(User user: userList){
+//				//TODO: 优化类型转换。	
+//				Map<String,String> map = new HashMap<String, String>();
+//				map.put("userId"+user.name,String.valueOf(user.id));
+//				map.put("userName"+user.name, user.name);
+//				map.put("userPassword"+user.name, user.password);
+//				jedis.rpush("AllUserName", String.valueOf(user.name));
+//				jedis.hmset(userListKey,map );			
+//			}
+//		}		
+//		jedis.close();
+//	}
 }

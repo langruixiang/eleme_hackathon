@@ -1,6 +1,9 @@
 package server;
 
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonParser;
@@ -48,6 +51,11 @@ public class ConstValue {
     
     public static JedisPoolConfig config = new JedisPoolConfig();
     public static  JedisPool jedisPool;
+    
+    public static Set<String> userSet = new HashSet<>();
+    public static HashMap<String, String> nameToPwdMap = new HashMap<>();
+    public static HashMap<String, Integer> nameToIdMap = new HashMap<>();
+    
     
     static{
     	Map<String,String> envMap = System.getenv();
@@ -107,7 +115,8 @@ public class ConstValue {
     			//逐出扫描的时间间隔(毫秒) 如果为负数,则不运行逐出线程, 默认-1
     			config.setTimeBetweenEvictionRunsMillis(10000);
     			jedisPool = new JedisPool(config, ConstValue.REDIS_HOST,Integer.parseInt(ConstValue.REDIS_PORT));
-    			RedisDAL.GetAllUser();
+    			//RedisDAL.GetAllUser();
+    			RedisDAL.GetAllUserSaveInJava(userSet,nameToPwdMap,nameToIdMap);
     			RedisDAL.GetAllFoodFromSQL();
     	
     	//System.out.println();
