@@ -5,6 +5,10 @@ import server.ConstValue;
 
 public class AccessTokenAuthorization {
 	
+	static String userScript = 
+			"redis.call('set', KEYS[1], KEYS[2]);\n" 
+			+ "redis.call('set', KEYS[3], KEYS[1]);\n"
+			+ "redis.call('set', KEYS[4], KEYS[5])";
 	
 	public String getAccessToken(final String username, final String password)
 	{
@@ -20,13 +24,8 @@ public class AccessTokenAuthorization {
 		if(redis.get(userId) != null) accessToken = redis.get(userId);
 		else  {
 			accessToken = Tool.generateAccessToken();
-			//redis.sadd("user", accessToken);
-			redis.set(userId, accessToken);
-			redis.set(accessToken+"uid", userId);
+			redis.eval(userScript, 5, userId, accessToken, accessToken+"uid", accessToken+"cartNum", "0");
 		}
-		//accessToken = user;
-		//String accessToken = redis.get("userIdU") + 'p';
-		//redis.incr("userIdU");
 		
 		
 		redis.close();

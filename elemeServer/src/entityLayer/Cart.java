@@ -28,19 +28,24 @@ public class Cart {
 	RedisDAL redisDAL = new RedisDAL();
 	JedisFood jedisFood = new JedisFood();
 	
+	static String createCartScript = 
+			"redis.call('set', KEYS[1]..KEYS[4], KEYS[3]);\n"
+			+ "local num = redis.call('get', KEYS[2]..KEYS[5]);\n"
+			+ "redis.call('set', KEYS[2]..num, KEYS[1]);\n"
+			+ "redis.call('incr', KEYS[2]..KEYS[5])";
+	
 	// 新建篮子
 	public String createCart(final String accessToken) {
-		Jedis redis = ConstValue.jedisPool.getResource();
-//		System.out.println("createCart");
-		
 		String cartId = Tool.generateAccessToken();
-		//String cartId = redis.get("cartIdU") + "c";
-		//redis.incr("cartIdU");
-		redis.sadd("cartId", cartId);
-		redis.sadd(accessToken, cartId);
+		
+		Jedis redis = ConstValue.jedisPool.getResource();	
+		redis.eval(createCartScript, 5, cartId, accessToken, "1", "Unique", "cartNum");
 		redis.close();
 		return cartId;
 	}
+	
+	static String addFoodScript = 
+			"redis.call('hmset', KEYS[1], KEYS[2], KEYS[3])";
 	
 	// 添加食物
 	public String addFoodToCart(final String foodId, final String count, 
@@ -63,10 +68,9 @@ public class Cart {
 		int curCartFoodNumByFoodId = jedisFood.getFoodNumByFoodIdInCartId(cartId, foodId);
 		
 		Jedis redis = ConstValue.jedisPool.getResource();
-		Map<String, String> map = new HashMap<String, String>();
-		map.put(foodId,String.valueOf(cnt + curCartFoodNumByFoodId));
-		redis.hmset(cartId, map);
+		redis.eval(addFoodScript, 3, cartId, foodId, String.valueOf(cnt + curCartFoodNumByFoodId));
 		redis.close();
+		
 		return SUCCESS;
 	}
 	
