@@ -68,88 +68,79 @@ public class ServerHandler extends ChannelInboundHandlerAdapter {
   
             if (reader.isEnd()) {  
                 String jsonString = new String(reader.readFull());  
-                //System.out.println("JSON String:" + jsonString);  
+                //System.out.println("JSON String:" + jsonString); 
                 
-                FullHttpResponse response = null;  
+                ctx.executor().submit(new ServerTask(httpMethod, URI, accessToken, jsonString, ctx));
                 
-               if(httpMethod == HttpMethod.POST){
-                	if(URI.equals("/login")){
-                		response = new ProcessLogin(jsonString).GetHttpResponse();
-                	}else if(URI.startsWith("/carts")){
-                	   if(accessToken != null){
-                		   response = new ProcessCreateCarts(accessToken).GetHttpResponce();
-                	   }else{
-                			response = HttpResponseFactory.getTokenUnthorizedResponse();
-                		}           
-                	}else if(URI.startsWith("/orders")){
-                		response = new ProcessAddOrders(accessToken,jsonString).GetHttpResponse();                		
-                	}else{
-                		response = HttpResponseFactory.getNotFoundResponse();
-                	}                	
-                }else if(httpMethod == HttpMethod.GET){
-                	if(URI.startsWith("/foods")){
-                		if( accessToken != null){
-                			response = new ProcessQueryStock(accessToken).GetHttpResponce();
-                		}else{
-                			response = HttpResponseFactory.getTokenUnthorizedResponse();
-                		}               		
-                	}else if(URI.startsWith("/orders")){
-                		if(accessToken != null){
-                			response = new ProcessQueryOrders(accessToken).GetHttpResponse();
-                		}else{
-                			response = HttpResponseFactory.getTokenUnthorizedResponse();
-                		}                		
-                	}else if(URI.startsWith("/admin/")){
-                		if(accessToken != null){
-                			response = new ProcessAdminQueryOrders(accessToken).GetHttpResponse();
-                		}else{
-                			response = HttpResponseFactory.getTokenUnthorizedResponse();
-                		}
-                	}else{
-                		response = HttpResponseFactory.getNotFoundResponse();
-                	}
-                }else if(httpMethod == HttpMethod.PATCH){
-                	if(URI.startsWith("/carts")){
-                		String cartid = "";
-                		
-                		if(accessToken != null){
-                			if(URI.contains("?")){
-                				cartid = URI.split("\\?")[0].split("/")[2];
-                			}else{
-                				cartid = URI.split("/")[2];
-                			}
-                			response = new ProcessAddFoods(cartid,accessToken,jsonString).GetHttpResponce();
-                		}else{
-                			response = HttpResponseFactory.getTokenUnthorizedResponse();
-                		}
-                		
-                	}else{
-                		response = HttpResponseFactory.getNotFoundResponse();
-                	}
-                }else{
-                	response = HttpResponseFactory.getNotFoundResponse();
-                }
-  
-                response.headers().set(CONTENT_TYPE, "application/json");  
-                response.headers().set(CONTENT_LENGTH, response.content().readableBytes());  
-                response.headers().set(CONNECTION, Values.KEEP_ALIVE);  
-                
-                ctx.write(response);  
-                ctx.flush();  
+//                FullHttpResponse response = null;  
+//                
+//               if(httpMethod == HttpMethod.POST){
+//                	if(URI.equals("/login")){
+//                		response = new ProcessLogin(jsonString).GetHttpResponse();
+//                	}else if(URI.startsWith("/carts")){
+//                	   if(accessToken != null){
+//                		   response = new ProcessCreateCarts(accessToken).GetHttpResponce();
+//                	   }else{
+//                			response = HttpResponseFactory.getTokenUnthorizedResponse();
+//                		}           
+//                	}else if(URI.startsWith("/orders")){
+//                		response = new ProcessAddOrders(accessToken,jsonString).GetHttpResponse();                		
+//                	}else{
+//                		response = HttpResponseFactory.getNotFoundResponse();
+//                	}                	
+//                }else if(httpMethod == HttpMethod.GET){
+//                	if(URI.startsWith("/foods")){
+//                		if( accessToken != null){
+//                			response = new ProcessQueryStock(accessToken).GetHttpResponce();
+//                		}else{
+//                			response = HttpResponseFactory.getTokenUnthorizedResponse();
+//                		}               		
+//                	}else if(URI.startsWith("/orders")){
+//                		if(accessToken != null){
+//                			response = new ProcessQueryOrders(accessToken).GetHttpResponse();
+//                		}else{
+//                			response = HttpResponseFactory.getTokenUnthorizedResponse();
+//                		}                		
+//                	}else if(URI.startsWith("/admin/")){
+//                		if(accessToken != null){
+//                			response = new ProcessAdminQueryOrders(accessToken).GetHttpResponse();
+//                		}else{
+//                			response = HttpResponseFactory.getTokenUnthorizedResponse();
+//                		}
+//                	}else{
+//                		response = HttpResponseFactory.getNotFoundResponse();
+//                	}
+//                }else if(httpMethod == HttpMethod.PATCH){
+//                	if(URI.startsWith("/carts")){
+//                		String cartid = "";
+//                		
+//                		if(accessToken != null){
+//                			if(URI.contains("?")){
+//                				cartid = URI.split("\\?")[0].split("/")[2];
+//                			}else{
+//                				cartid = URI.split("/")[2];
+//                			}
+//                			response = new ProcessAddFoods(cartid,accessToken,jsonString).GetHttpResponce();
+//                		}else{
+//                			response = HttpResponseFactory.getTokenUnthorizedResponse();
+//                		}
+//                		
+//                	}else{
+//                		response = HttpResponseFactory.getNotFoundResponse();
+//                	}
+//                }else{
+//                	response = HttpResponseFactory.getNotFoundResponse();
+//                }
+//  
+//                response.headers().set(CONTENT_TYPE, "application/json");  
+//                response.headers().set(CONTENT_LENGTH, response.content().readableBytes());  
+//                response.headers().set(CONNECTION, Values.KEEP_ALIVE);  
+//                
+//                ctx.write(response);  
+//                ctx.flush();  
             }  
         }  
     }  
-  
-    @Override  
-    public void channelReadComplete(ChannelHandlerContext ctx) throws Exception {  
-//         //System.out.println("HttpServerInboundHandler.channelReadComplete");  
-        ctx.flush();  
-    }  
-    
-    @Override
-    public void exceptionCaught(ChannelHandlerContext ctx,Throwable cause){
-    	cause.printStackTrace();
-    }
     
     private String getToken(String URI){
     	String ret = null;

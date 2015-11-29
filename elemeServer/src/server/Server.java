@@ -13,7 +13,7 @@ public class Server {
     public static void main(String[] args) throws InterruptedException {
     	serverInit();
     	
-        EventLoopGroup bossGroup = new NioEventLoopGroup();
+        EventLoopGroup bossGroup = new NioEventLoopGroup(1);
         EventLoopGroup workerGroup = new NioEventLoopGroup();
         try {
             ServerBootstrap b = new ServerBootstrap();
