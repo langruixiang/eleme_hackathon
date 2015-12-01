@@ -9,11 +9,8 @@ hs_err_pid*
 .metadata/
 .recommenders/
 .vagrant/
-README.md
 RemoteSystemsTempFiles/
-benchmark/
-tests/
-Vagrantfile
 hackathon-java/
 TestMySql.java
 app.log
+tests/__pycache__
